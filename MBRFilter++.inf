@@ -1,0 +1,47 @@
+; MBRFilterPP.inf
+;
+[Version]
+Signature = "$Windows NT$"
+Class     = DiskDrive
+ClassGUID = {4d36e967-e325-11ce-bfc1-08002be10318}
+Provider  = %mbrfpp%
+DriverVer = 03/22/2002,5.1.2600.0
+CatalogFile=MBRFilterPP.cat
+;
+; General installation section
+;
+[DefaultInstall]
+CopyFiles = @MBRFilterPP.sys
+Addreg    = MBRFilterPP.AddReg
+[DefaultInstall.NT]
+CopyFiles = @MBRFilterPP.sys
+Addreg    = MBRFilterPP.AddReg
+[DestinationDirs]
+DefaultDestDir = 12
+[MBRFilterPP.AddReg]
+HKLM, System\CurrentControlSet\Control\Class\{4d36e967-e325-11ce-bfc1-08002be10318}, UpperFilters, 0x00010008, MBRFilterPP
+;
+; Service installation section
+;
+[DefaultInstall.Services]
+AddService = MBRFilterPP, , MBRFilterPP.Service.Install
+[DefaultInstall.NT.Services]
+AddService = MBRFilterPP, , MBRFilterPP.Service.Install
+[MBRFilterPP.Service.Install]
+DisplayName    = %service_desc%
+ServiceType    = 1
+StartType      = 0
+ErrorControl   = 1
+ServiceBinary  = %12%\MBRFilterPP.sys
+LoadOrderGroup = "scsi class"
+[SourceDisksFiles]
+MBRFilterPP.sys=1
+[SourceDisksNames]
+1 = %diskid1%,,,
+;
+; Localizable Strings
+;
+[Strings]
+mbrfpp       = "MBRFilter++"
+service_desc = "MBRFilter++ Disk Integrity Filter"
+diskid1      = "MBRFilter++ Disk Integrity Filter"
