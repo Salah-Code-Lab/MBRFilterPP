@@ -9,3 +9,12 @@ For the SCSI protections the Tests confirm no Loss of functionality, stability
 because NTFS.sys manages its components via IRP not SCSI 
 MFTMirr is managed freely by NTFS.sys 
 That is all what i have to say
+
+
+## NOTICE!!!
+
+DO NOT INSTALL THE DRIVER IF IT IS NOT SIGNED 
+DO NOT ATTEMPT TO UNINSTALL THE DRIVER MANUALLY A SPECIFC TOOL WILL BE PUBLISHED TO UNINSTALL IT AND WILL BE BUILT 
+FOR EMERGENCY USE 
+
+## YOU HAD BEEN WARNED
