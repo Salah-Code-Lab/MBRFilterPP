@@ -4,7 +4,6 @@ This driver is made to Intercept Critical sector writes and stop them
 With a ExRaiseHardError to alert the user Immediatly
 Intercepts: 
 IRP (Execulsion is MFTMirr Sectors)
-SCSI will bug check on any write in the Sector range 0- 5119 
 For the SCSI protections the Tests confirm no Loss of functionality, stability 
 because NTFS.sys manages its components via IRP not SCSI 
 MFTMirr is managed freely by NTFS.sys 
