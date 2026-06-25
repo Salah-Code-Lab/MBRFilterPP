@@ -3,3 +3,7 @@ This Version warns the user instead of Bugchecking the machine
 this version is meant for deployment not only for virtual machines, test mode is fine for evaluation
 
 Lab Version will no longer be updated and is discontinued
+
+The difference between this version and the Deployment version is the minor Allocation pool call 
+
+just to ensure that the driver is compatible with older versions of windows
