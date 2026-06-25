@@ -1,5 +1,5 @@
 This Version warns the user instead of Bugchecking the machine 
 
-this version is meant for deployment not only for virtual machines 
+this version is meant for deployment not only for virtual machines, test mode is fine for evaluation
 
-Lab Version will no longer be updated
+Lab Version will no longer be updated and is discontinued
