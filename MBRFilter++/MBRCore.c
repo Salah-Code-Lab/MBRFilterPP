@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MBRFilter++ (MBRFilterPP.c)
 * Fancy Symbols:÷ + - x * 🂡 (ace of spades)
  * 
@@ -53,6 +53,112 @@ MBRFilterPP_SendIoctl(
 
     return status;
 }
+
+
+VOID MBRFilterPP_Main64(
+    _In_ ULONG64 StartSector,
+    _In_ ULONG64 EndSector
+)
+{
+    UNICODE_STRING	   msgTitle, msgText;
+    ULONG_PTR param[3];
+    UNREFERENCED_PARAMETER(StartSector);
+    UNREFERENCED_PARAMETER(EndSector);
+
+
+    RtlInitUnicodeString(&msgTitle, L"MBRFilter++ Critical Sector Protection");
+
+
+    RtlInitUnicodeString(&msgText,
+        L"A program attempted to write to critical boot sectors (sectors 0-63).\n\n"
+        L"This operation has been BLOCKED to prevent boot corruption.\n\n"
+        L"If you need to Repartition the Drive or Partition\n"
+        L"Retry the operation from Safe Mode\n\n"
+        L"If a another app was ran as Administrator Turn off your Internet Now and notify your Admin immediately.\n\n"
+        L"Press OK to continue.");
+
+
+
+    param[0] = (ULONG_PTR)&msgText;
+    param[1] = (ULONG_PTR)&msgTitle;
+    param[2] = 0x40;
+
+    ULONG response = 0;
+    ExRaiseHardError(STATUS_SERVICE_NOTIFICATION, 3, 3, param, 1, &response);
+}
+
+
+
+
+
+
+VOID MBRFilterPP_Last64(
+    _In_ ULONG64 StartSector,
+    _In_ ULONG64 EndSector
+
+)
+{
+    UNREFERENCED_PARAMETER(StartSector);
+    UNREFERENCED_PARAMETER(EndSector);
+    ULONG_PTR		   param[3];
+    UNICODE_STRING	   msgTitle, msgText;
+
+    RtlInitUnicodeString(&msgTitle, L"MBRFilter++ Critical Sector Protection");
+
+
+    RtlInitUnicodeString(&msgText,
+        L"A program attempted to write to critical Backup sectors (Last 64 sectors of your disk Or partition).\n\n"
+        L"This operation has been BLOCKED to prevent Boot backup corruption.\n\n"
+        L"If a another app was ran as Administrator Turn off your Internet Now and notify your Admin immediately.\n\n"
+        L"Press OK to continue.");
+
+
+
+    param[0] = (ULONG_PTR)&msgText;
+    param[1] = (ULONG_PTR)&msgTitle;
+    param[2] = 0x40;
+
+    ULONG response = 0;
+    ExRaiseHardError(STATUS_SERVICE_NOTIFICATION, 3, 3, param, 1, &response);
+}
+
+
+VOID MBRFilterPP_Mid64_5119(
+    _In_ ULONG64 StartSector,
+    _In_ ULONG64 EndSector
+)
+{
+    UNICODE_STRING	   msgTitle, msgText;
+    ULONG_PTR param[3];
+    UNREFERENCED_PARAMETER(StartSector);
+    UNREFERENCED_PARAMETER(EndSector);
+
+
+    RtlInitUnicodeString(&msgTitle, L"MBRFilter++ Critical Sector Protection");
+
+    RtlInitUnicodeString(&msgText,
+        L"A program attempted to write to critical sectors (Sectors64-5119 of your disk Or partition).\n\n"
+        L"This operation has been BLOCKED to prevent Boot corruption.\n\n"
+        L"If you ran a repartitioning tool boot to safe mode and retry the repartition operation.\n\n"
+        L"If another app was ran as Administrator Turn off your Internet Now and notify your Admin immediately.\n\n"
+        L"Press OK to continue.");
+
+    param[0] = (ULONG_PTR)&msgText;
+    param[1] = (ULONG_PTR)&msgTitle;
+    param[2] = 0x40;
+
+    ULONG response = 0;
+    ExRaiseHardError(STATUS_SERVICE_NOTIFICATION, 3, 3, param, 1, &response);
+}
+
+
+
+
+
+
+
+
+
 
 // Query Physical Sectors I should had used MmIoMapToSpace Yeah sure sure (Sarcastic piece of shi)
 
@@ -451,43 +557,34 @@ MBRFilterPP_DispatchPassThrough(
          _In_ PDEVICE_OBJECT                 DeviceObject
      )
  {
-  
+     UNREFERENCED_PARAMETER(DeviceObject);
+
      if (StartSector <= CRITICAL_ZONE_END)
      {
-         KeBugCheckEx(
-             BUGCHECK_FORBIDDEN_SECTOR_WRITE,
-             (ULONG_PTR)StartSector,
-             (ULONG_PTR)EndSector,
-             (ULONG_PTR)0,
-             (ULONG_PTR)DeviceObject
-         );
+         MBRFilterPP_Main64(StartSector, EndSector);
+         return STATUS_ACCESS_DENIED;
      }
 
-     
      if (DevExt->IsGPT && (EndSector >= DevExt->TailStartSector))
      {
-         KeBugCheckEx(
-             BUGCHECK_SECTOR_BACKUP_WRITE_FORBIDDEN,
-             (ULONG_PTR)StartSector,
-             (ULONG_PTR)EndSector,
-             (ULONG_PTR)DevExt->TailStartSector,
-             (ULONG_PTR)DeviceObject
-         );
+         MBRFilterPP_Last64(StartSector, EndSector);
+         return STATUS_ACCESS_DENIED;
      }
 
-    
      if ((EndSector >= 64ULL) && (StartSector <= HEAD_PROTECT_END))
      {
          BOOLEAN fullyInExempt = (StartSector >= EXEMPT_MFTMIRR_START) &&
              (EndSector <= EXEMPT_MFTMIRR_END);
 
          if (!fullyInExempt)
+         {
+             MBRFilterPP_Mid64_5119(StartSector, EndSector);
              return STATUS_ACCESS_DENIED;
+         }
      }
 
      return STATUS_SUCCESS;
  }
-
 
 
 
