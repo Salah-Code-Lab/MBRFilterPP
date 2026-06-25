@@ -1,7 +1,7 @@
 # MBRFilter++
 
 This driver is made to Intercept Critical sector writes and stop them 
-With a Bug Check routine to alert the user Immediatly
+With a ExRaiseHardError to alert the user Immediatly
 Intercepts: 
 IRP (Execulsion is MFTMirr Sectors)
 SCSI will bug check on any write in the Sector range 0- 5119 
@@ -13,9 +13,9 @@ That is all what i have to say
 
 ## NOTICE!!!
 
-DO NOT INSTALL THE DRIVER IF IT IS NOT SIGNED, ONLY INSTALL ON VIRTUAL MACHINES FOR TESTING AND RESEARCH
+DO NOT INSTALL THE DRIVER IF IT IS NOT SIGNED.
 
-DO NOT ATTEMPT TO UNINSTALL THE DRIVER MANUALLY A SPECIFC TOOL WILL BE PUBLISHED TO UNINSTALL IT AND WILL BE BUILT 
+DO NOT ATTEMPT TO UNINSTALL THE DRIVER MANUALLY A SPECIFC TOOL WILL BE PUBLISHED TO UNINSTALL IT AND WILL BE BUILT
 
 FOR EMERGENCY USE 
 
