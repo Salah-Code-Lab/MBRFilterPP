@@ -6,7 +6,7 @@
 
 
 #include "MBRInclude.h"
-
+#pragma warning(disable: 4996) 
 
 
 // Hel;er
@@ -273,7 +273,7 @@ MBRFilterPP_DetectGPT(
 
     *IsGPT = FALSE;
 
-    buffer = (PUCHAR)ExAllocatePool2(POOL_FLAG_NON_PAGED, 512, MBRFPP_TAG);
+    buffer = (PUCHAR)ExAllocatePoolWithTag(NonPagedPool, 512, MBRFPP_TAG);
     if (buffer == NULL)
         return STATUS_INSUFFICIENT_RESOURCES;
 
