@@ -51,8 +51,9 @@ MBRFilterPP
 change to to:
 partmgr (NO CAPS & NO SPACE AFTER IT)
 
-[!Warning]
-<mark>DO NOT DELETE IT IF YOU DELETED IT THE MACHINE WILL LOOP IN 0x7B OR OTHER ERRORS MAKE SURE TO SET THE VALUE CORRECTLY</mark>
+[Warning!]
+<mark>DO NOT DELETE IT IF YOU DELETED IT THE MACHINE WILL LOOP IN 0x7B OR OTHER ERRORS,
+MAKE SURE TO SET THE VALUE CORRECTLY</mark>
 
 7. Reboot the machine it should boot successfuly again,
 after booting successfuly Delete the Service with 
