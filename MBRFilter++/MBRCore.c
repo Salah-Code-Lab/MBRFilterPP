@@ -549,6 +549,7 @@ MBRFilterPP_DispatchPassThrough(
 
 
 
+
  NTSTATUS
      MBRFilterPP_CheckSectorRange(
          _In_ PMBRFILTERPP_DEVICE_EXTENSION  DevExt,
@@ -558,34 +559,59 @@ MBRFilterPP_DispatchPassThrough(
      )
  {
      UNREFERENCED_PARAMETER(DeviceObject);
-
-     if (StartSector <= CRITICAL_ZONE_END)
-     {
-         MBRFilterPP_Main64(StartSector, EndSector);
-         return STATUS_ACCESS_DENIED;
-     }
-
-     if (DevExt->IsGPT && (EndSector >= DevExt->TailStartSector))
-     {
-         MBRFilterPP_Last64(StartSector, EndSector);
-         return STATUS_ACCESS_DENIED;
-     }
-
-     if ((EndSector >= 64ULL) && (StartSector <= HEAD_PROTECT_END))
-     {
-         BOOLEAN fullyInExempt = (StartSector >= EXEMPT_MFTMIRR_START) &&
-             (EndSector <= EXEMPT_MFTMIRR_END);
-
-         if (!fullyInExempt)
+     if (ExGetPreviousMode() == KernelMode) {
+         if (StartSector <= CRITICAL_ZONE_END)
          {
-             MBRFilterPP_Mid64_5119(StartSector, EndSector);
              return STATUS_ACCESS_DENIED;
          }
-     }
 
+         if (DevExt->IsGPT && (EndSector >= DevExt->TailStartSector))
+         {
+             return STATUS_ACCESS_DENIED;
+         }
+
+         if ((EndSector >= 64ULL) && (StartSector <= HEAD_PROTECT_END))
+         {
+             BOOLEAN fullyInExempt = (StartSector >= EXEMPT_MFTMIRR_START) &&
+                 (EndSector <= EXEMPT_MFTMIRR_END);
+
+             if (!fullyInExempt)
+             {
+                 return STATUS_ACCESS_DENIED;
+             }
+         }
+        
+     }
+     else
+     {
+         if (StartSector <= CRITICAL_ZONE_END)
+         {
+             MBRFilterPP_Main64(StartSector, EndSector);
+             return STATUS_ACCESS_DENIED;
+         }
+
+         if (DevExt->IsGPT && (EndSector >= DevExt->TailStartSector))
+         {
+             MBRFilterPP_Last64(StartSector, EndSector);
+             return STATUS_ACCESS_DENIED;
+         }
+
+         if ((EndSector >= 64ULL) && (StartSector <= HEAD_PROTECT_END))
+         {
+             BOOLEAN fullyInExempt = (StartSector >= EXEMPT_MFTMIRR_START) &&
+                 (EndSector <= EXEMPT_MFTMIRR_END);
+
+             if (!fullyInExempt)
+             {
+                 MBRFilterPP_Mid64_5119(StartSector, EndSector);
+                 return STATUS_ACCESS_DENIED;
+             }
+         }
+
+       
+     }
      return STATUS_SUCCESS;
  }
-
 
 
  NTSTATUS
