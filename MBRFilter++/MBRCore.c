@@ -667,16 +667,17 @@ MBRFilterPP_DispatchPassThrough(
      return IoCallDriver(devExt->LowerDeviceObject, Irp);
  }
 
-// Driver Unload
+// Driver Unload 
+// forget to remove the comments here they were already done correctly !
  VOID DriverUnload(_In_ PDRIVER_OBJECT DriverObject)
  {
      PDEVICE_OBJECT deviceObject = DriverObject->DeviceObject;
 
      while (deviceObject != NULL) {
-         // Use your actual struct name
+       
          PMBRFILTERPP_DEVICE_EXTENSION devExt = (PMBRFILTERPP_DEVICE_EXTENSION)deviceObject->DeviceExtension;
 
-         // Change 'TargetDeviceObject' to 'LowerDeviceObject' here
+       
          if (devExt->LowerDeviceObject) {
              IoDetachDevice(devExt->LowerDeviceObject);
          }
