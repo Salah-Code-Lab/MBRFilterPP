@@ -6,7 +6,6 @@
 
 
 #include "MBRInclude.h"
-#pragma warning(disable: 4996)  // Disable deprecation warning
 
 
 // Hel;er
@@ -273,7 +272,7 @@ MBRFilterPP_DetectGPT(
 
     *IsGPT = FALSE;
 
-    buffer = (PUCHAR)ExAllocatePoolWithTag(NonPagedPool, 512, MBRFPP_TAG);
+    buffer = (PUCHAR)ExAllocatePool2(POOL_FLAG_NON_PAGED, 512, MBRFPP_TAG);
     if (buffer == NULL)
         return STATUS_INSUFFICIENT_RESOURCES;
 
@@ -317,7 +316,6 @@ MBRFilterPP_DetectGPT(
 
     if (mbrSig != MBR_SIGNATURE_VALUE)
     {
-        KdPrint(("MBRFilter++: No MBR signature raw/uninitialized disk, MBR Partioned maybe i don't know better safe then Sorry\n"));
         goto Cleanup;
     }
 
@@ -336,7 +334,7 @@ MBRFilterPP_DetectGPT(
     status = STATUS_SUCCESS;
 
 Cleanup:
-    ExFreePoolWithTag(buffer, MBRFPP_TAG);
+    ExFreePool2(buffer, MBRFPP_TAG, NULL, 0);
     return status;
 }
 
@@ -558,6 +556,9 @@ MBRFilterPP_DispatchPassThrough(
      )
  {
      UNREFERENCED_PARAMETER(DeviceObject);
+     if (ExGetPreviousMode() == KernelMode) {
+         return STATUS_SUCCESS;
+     }
 
      if (StartSector <= CRITICAL_ZONE_END)
      {
