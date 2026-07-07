@@ -27,6 +27,9 @@ THE MACHINE WILL BE BRICKED AND WILL NEED MANUAL RESTORATION
 
 <img width="1567" height="747" alt="image" src="https://github.com/user-attachments/assets/4884ebcf-a730-4e83-be34-93a8e12d4684" />
 
+<img width="1149" height="612" alt="image" src="https://github.com/user-attachments/assets/c364dc37-6cb4-400f-9550-43eb3ef24dcf" />
+
+
 # Manual Recovery in case anything goes Sideways
 
 1. Boot to WinRE Open CMD from Trouble Shooting settings 
