@@ -4,6 +4,12 @@
  * 
  */
 
+#define INITGUID
+#include <guiddef.h>
+DEFINE_GUID(MBR_FILTER_PROVIDER,
+    0x1e4c6cf0, 0x833a, 0x4cff, 0xb1, 0x82, 0xcf, 0x1c, 0x72, 0x45, 0x26, 0x8a);
+#define MBR_EVENT_BLOCK_ID 9857
+REGHANDLE MbrEtwRegHandle = 0;
 
 #include "MBRInclude.h"
 
@@ -557,17 +563,69 @@ MBRFilterPP_DispatchPassThrough(
      )
  {
      UNREFERENCED_PARAMETER(DeviceObject);
+
      if (ExGetPreviousMode() == KernelMode) {
+
+         // --- CHECK 1: Sector 0-63 Protection ---
          if (StartSector <= CRITICAL_ZONE_END)
          {
+             DbgPrint("A Driver Had Attempted Write to the First 64 Sectors of Disk\n");
+
+             if (MbrEtwRegHandle != 0)
+             {
+                 EVENT_DESCRIPTOR eventDescriptor;
+                 EVENT_DATA_DESCRIPTOR dataFields[2];
+
+                 RtlZeroMemory(&eventDescriptor, sizeof(EVENT_DESCRIPTOR));
+                 eventDescriptor.Id = MBR_EVENT_BLOCK_ID;
+                 eventDescriptor.Level = 3;
+                 eventDescriptor.Channel = 1;
+
+                 const char* warningMessage = "A Kernel Thread/Driver had attempted write to the first 64 Sectors";
+
+                 EtwEventDataDescCreate(&dataFields[0], warningMessage, (ULONG)(strlen(warningMessage) + 1));
+                 EtwEventDataDescCreate(&dataFields[1], &StartSector, sizeof(ULONG64));
+
+                 EtwWrite(MbrEtwRegHandle,
+                     &eventDescriptor,
+                     NULL,
+                     2,
+                     dataFields);
+             }
+
              return STATUS_ACCESS_DENIED;
          }
 
+         // --- CHECK 2: GPT Tail Protection ---
          if (DevExt->IsGPT && (EndSector >= DevExt->TailStartSector))
          {
+             DbgPrint("Kernel attempted write to Backup Sectors last 64 sectors of your disk\n");
+             if (MbrEtwRegHandle != 0)
+             {
+                 EVENT_DESCRIPTOR eventDescriptor;
+                 EVENT_DATA_DESCRIPTOR dataFields[2];
+
+                 RtlZeroMemory(&eventDescriptor, sizeof(EVENT_DESCRIPTOR));
+                 eventDescriptor.Id = MBR_EVENT_BLOCK_ID;
+                 eventDescriptor.Level = 3;
+                 eventDescriptor.Channel = 1;
+
+                 const char* warningMessage = "A Kernel Thread/Driver had attempted write to the Last 64 sectors of your disk";
+
+                 EtwEventDataDescCreate(&dataFields[0], warningMessage, (ULONG)(strlen(warningMessage) + 1));
+                 EtwEventDataDescCreate(&dataFields[1], &StartSector, sizeof(ULONG64));
+
+                 EtwWrite(MbrEtwRegHandle,
+                     &eventDescriptor,
+                     NULL,
+                     2,
+                     dataFields);
+                 
+             }
              return STATUS_ACCESS_DENIED;
          }
 
+       
          if ((EndSector >= 64ULL) && (StartSector <= HEAD_PROTECT_END))
          {
              BOOLEAN fullyInExempt = (StartSector >= EXEMPT_MFTMIRR_START) &&
@@ -575,13 +633,35 @@ MBRFilterPP_DispatchPassThrough(
 
              if (!fullyInExempt)
              {
+                 if (MbrEtwRegHandle != 0)
+                 {
+                     EVENT_DESCRIPTOR eventDescriptor;
+                     EVENT_DATA_DESCRIPTOR dataFields[2];
+
+                     RtlZeroMemory(&eventDescriptor, sizeof(EVENT_DESCRIPTOR));
+                     eventDescriptor.Id = MBR_EVENT_BLOCK_ID;
+                     eventDescriptor.Level = 3;
+                     eventDescriptor.Channel = 1;
+
+                     const char* warningMessage = "A Kernel Thread/Driver had attempted write to the Mid 64-5119 Sectors";
+
+                     EtwEventDataDescCreate(&dataFields[0], warningMessage, (ULONG)(strlen(warningMessage) + 1));
+                     EtwEventDataDescCreate(&dataFields[1], &StartSector, sizeof(ULONG64));
+
+                     EtwWrite(MbrEtwRegHandle,
+                         &eventDescriptor,
+                         NULL,
+                         2,
+                         dataFields);
+
+                 }
                  return STATUS_ACCESS_DENIED;
              }
          }
-        
      }
      else
      {
+         // --- UserMode Section ---
          if (StartSector <= CRITICAL_ZONE_END)
          {
              MBRFilterPP_Main64(StartSector, EndSector);
@@ -605,11 +685,12 @@ MBRFilterPP_DispatchPassThrough(
                  return STATUS_ACCESS_DENIED;
              }
          }
-
-       
      }
+
+     
      return STATUS_SUCCESS;
  }
+
 
 
 
