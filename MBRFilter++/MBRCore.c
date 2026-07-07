@@ -317,7 +317,7 @@ MBRFilterPP_DetectGPT(
 
     if (mbrSig != MBR_SIGNATURE_VALUE)
     {
-        KdPrint(("MBRFilter++: No MBR signature raw/uninitialized disk, MBR Partioned maybe i don't know better safe then Sorry\n"));
+        KdPrint(("MBRFilter++: No MBR signature raw/uninitialized disk, GPT Partitioned maybe ?\n"));
         goto Cleanup;
     }
 
