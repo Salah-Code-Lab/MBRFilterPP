@@ -3,11 +3,10 @@
 * Fancy Symbols:÷ + - x * 🂡 (ace of spades)
  * 
  */
-// a new version will be published to fix the deadlock issue from within the kernel it just needs to be tested before it is published 
-// a simple fix a simple seperation but could cause issues please be patient because testing is being conducted 7/7/2026
+
 
 #include "MBRInclude.h"
-
+#pragma warning(disable: 4996)  // Disable deprecation warning
 
 
 // Hel;er
@@ -274,7 +273,7 @@ MBRFilterPP_DetectGPT(
 
     *IsGPT = FALSE;
 
-    buffer = (PUCHAR)ExAllocatePool2(POOL_FLAG_NON_PAGED, 512, MBRFPP_TAG);
+    buffer = (PUCHAR)ExAllocatePoolWithTag(NonPagedPool, 512, MBRFPP_TAG);
     if (buffer == NULL)
         return STATUS_INSUFFICIENT_RESOURCES;
 
@@ -318,7 +317,7 @@ MBRFilterPP_DetectGPT(
 
     if (mbrSig != MBR_SIGNATURE_VALUE)
     {
-        KdPrint(("MBRFilter++: No MBR signature raw/uninitialized disk, GPT Partitioned maybe ?\n"));
+        KdPrint(("MBRFilter++: No MBR signature raw/uninitialized disk, MBR Partioned maybe i don't know better safe then Sorry\n"));
         goto Cleanup;
     }
 
@@ -668,17 +667,17 @@ MBRFilterPP_DispatchPassThrough(
      return IoCallDriver(devExt->LowerDeviceObject, Irp);
  }
 
-// Driver Unload 
-// forget to remove the comments here they were already done correctly !
+// Driver Unload
+ // they are already done correctly!
  VOID DriverUnload(_In_ PDRIVER_OBJECT DriverObject)
  {
      PDEVICE_OBJECT deviceObject = DriverObject->DeviceObject;
 
      while (deviceObject != NULL) {
-       
+         
          PMBRFILTERPP_DEVICE_EXTENSION devExt = (PMBRFILTERPP_DEVICE_EXTENSION)deviceObject->DeviceExtension;
 
-       
+        
          if (devExt->LowerDeviceObject) {
              IoDetachDevice(devExt->LowerDeviceObject);
          }
