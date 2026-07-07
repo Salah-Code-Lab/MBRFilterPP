@@ -29,6 +29,9 @@ THE MACHINE WILL BE BRICKED AND WILL NEED MANUAL RESTORATION
 
 <img width="1149" height="612" alt="image" src="https://github.com/user-attachments/assets/c364dc37-6cb4-400f-9550-43eb3ef24dcf" />
 
+<img width="1152" height="557" alt="image" src="https://github.com/user-attachments/assets/d5871a40-5432-4862-9ef3-5e055f984abb" />
+
+
 
 # Manual Recovery in case anything goes Sideways
 
