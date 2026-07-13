@@ -47,32 +47,33 @@ THE MACHINE WILL BE BRICKED AND WILL NEED MANUAL RESTORATION
 Go to MBRFilterPP usually in HKEY_LOCAL_MACHINE\(HIVE NAME that you named it with)\ControlSet001\Services\MBRFilterPP
 set the START value to 4
 
-6. After setting the MBRFilterPP service start key as 4,
-Go to HKEY_LOCAL_MACHINE\(HIVE NAME that you named it with)\ControlSet001\Control\Class\{4d36e967-e325-11ce-bfc1-08002be10318}
+6. After setting the MBRFilterPP service start key as 4,<br>
+Go to HKEY_LOCAL_MACHINE\<mark>(HIVE NAME that you named it with)</mark>\ControlSet001\Control\Class\{4d36e967-e325-11ce-bfc1-08002be10318}<br>
 there should be a UpperFilters key (REG_MULTI_SZ) that has a value of
 
-partmgr 
+partmgr<br>
 MBRFilterPP
 
-change to to:
-partmgr (NO CAPS & NO SPACE AFTER IT)
+change to to:<br>
+partmgr<br>
+> (NO CAPS & NO SPACE AFTER IT)
 
-[Warning!]
-<mark>DO NOT DELETE IT IF YOU DELETED IT THE MACHINE WILL LOOP IN 0x7B OR OTHER ERRORS,
+Warning!
+<mark>DO NOT DELETE IT IF YOU DELETED IT THE MACHINE WILL LOOP IN 0x7B OR OTHER ERRORS,<br>
 MAKE SURE TO SET THE VALUE CORRECTLY</mark>
 
-7. Reboot the machine it should boot successfuly again,
-after booting successfuly Delete the Service with 
-Sc delete MBRFilterPP.
+7. Reboot the machine it should boot successfuly again,<br>
+after booting successfuly Delete the Service with<br>
+<code>Sc delete MBRFilterPP</code>
 
 # Note: 
-if you face any issues,
-Repeat the steps and make sure of: 
+if you face any issues,<br>
+Repeat the steps and make sure of:<br> 
 1. Typing the Upperfilters Value CORRECTLY there is no spaces after partmgr and do not capitalize it
 
-2. Make sure that you had set the Service to DISABLED
+2. Make sure that you had set the Service to <code>DISABLED</code>
 
-3. If you face any other issues Please contact me and if possible provide mini dumps, and as much info possible. 
+3. If you face any other issues Please contact me and if possible provide mini dumps, and as much info possible.<br>
 thank you for using Salah-Code-Lab Solutions
 
 You can Contact me in Session for Direct messages if you needed support or more info about the Driver(s):
