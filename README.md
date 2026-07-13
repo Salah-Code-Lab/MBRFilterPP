@@ -42,11 +42,11 @@ THE MACHINE WILL BE BRICKED AND WILL NEED MANUAL RESTORATION
 4. Click on File and mount the Registry Hive (SYSTEM) path is usually <code>Z:\Windows\System32\Config</code> (Change the drive letter Z: to where your windows install is) then load the hive and name it
 
 5. After loading the Hive from Z:\Windows\System32\Config\SYSTEM<br>
-Go to MBRFilterPP usually in HKEY_LOCAL_MACHINE\<mark>(HIVE NAME that you named it with)</mark>\ControlSet001\Services\MBRFilterPP
+Go to MBRFilterPP usually in HKEY_LOCAL_MACHINE\(HIVE NAME that you named it with)\ControlSet001\Services\MBRFilterPP
 set the START value to 4
 
 6. After setting the MBRFilterPP service start key as 4 <code>(DISABLED)</code>,<br>
-Go to HKEY_LOCAL_MACHINE\<mark>(HIVE NAME that you named it with)</mark>\ControlSet001\Control\Class\{4d36e967-e325-11ce-bfc1-08002be10318}<br>
+Go to HKEY_LOCAL_MACHINE\(HIVE NAME that you named it with)\ControlSet001\Control\Class\{4d36e967-e325-11ce-bfc1-08002be10318}<br>
 there should be a UpperFilters key <code>(REG_MULTI_SZ)</code> that has a value of
 
 partmgr<br>
