@@ -1,26 +1,24 @@
 # MBRFilter++
 
-This driver is made to Intercept Critical sector writes and stop them 
-With a ExRaiseHardError to alert the user Immediatly
-Intercepts: 
-IRP (Execulsion is MFTMirr Sectors)
-For the SCSI protections the Tests confirm no Loss of functionality, stability 
-because NTFS.sys manages its components via IRP not SCSI 
-MFTMirr is managed freely by NTFS.sys 
+This driver is made to Intercept Critical sector writes and stop them<br>
+With a ExRaiseHardError to alert the user Immediatly<br>
+Intercepts:<br>
+IRPs <mark>(Execulsion is MFTMirr Sectors)</mark>
+For the SCSI protections, the Tests confirm no Loss of functionality, stability<br> 
+because NTFS.sys manages its components via <code>IRPs</code> not SCSI<br> 
+MFTMirr is managed freely by <mark>NTFS.sys</mark><br> 
 That is all what i have to say
 
 
 ## NOTICE!!!
-
-DO NOT INSTALL THE DRIVER IF IT IS NOT SIGNED.
-
-DO NOT ATTEMPT TO UNINSTALL THE DRIVER MANUALLY A SPECIFC TOOL WILL BE PUBLISHED TO UNINSTALL IT AND WILL BE BUILT
-
-FOR EMERGENCY USE 
+<mark>
+DO NOT INSTALL THE DRIVER IF IT IS NOT SIGNED.<br>
+DO NOT ATTEMPT TO UNINSTALL THE DRIVER MANUALLY A SPECIFC TOOL IS PUBLISHED TO UNINSTALL IT AND WILL BE PRE-BUILT<br>
+FOR EMERGENCY USE</mark> 
 
 ## DO NOT LOAD THE DRIVER IF
 
-INTEL RAPID STORAGE TECHNOLOGY IS LOADED ON YOUR MACHINE 
+INTEL RAPID STORAGE TECHNOLOGY (RST) IS LOADED ON YOUR MACHINE
 THE MACHINE WILL BE BRICKED AND WILL NEED MANUAL RESTORATION
 
 ## YOU HAD BEEN WARNED
@@ -41,15 +39,15 @@ THE MACHINE WILL BE BRICKED AND WILL NEED MANUAL RESTORATION
 
 3. Afterwards select HKEY_LOCAL_MACHINE
 
-4. Click on File and mount the Registry Hive (SYSTEM) path is usually Z:\Windows\System32\Config (Change the drive letter Z: to where your windows install is) then load the hive and name it
+4. Click on File and mount the Registry Hive (SYSTEM) path is usually <code>Z:\Windows\System32\Config</code> (Change the drive letter Z: to where your windows install is) then load the hive and name it
 
-5. After loading the Hive from Z:\Windows\System32\Config\SYSTEM
-Go to MBRFilterPP usually in HKEY_LOCAL_MACHINE\(HIVE NAME that you named it with)\ControlSet001\Services\MBRFilterPP
+5. After loading the Hive from Z:\Windows\System32\Config\SYSTEM<br>
+Go to MBRFilterPP usually in HKEY_LOCAL_MACHINE\<mark>(HIVE NAME that you named it with)</mark>\ControlSet001\Services\MBRFilterPP
 set the START value to 4
 
-6. After setting the MBRFilterPP service start key as 4,<br>
+6. After setting the MBRFilterPP service start key as 4 <code>(DISABLED)</code>,<br>
 Go to HKEY_LOCAL_MACHINE\<mark>(HIVE NAME that you named it with)</mark>\ControlSet001\Control\Class\{4d36e967-e325-11ce-bfc1-08002be10318}<br>
-there should be a UpperFilters key (REG_MULTI_SZ) that has a value of
+there should be a UpperFilters key <code>(REG_MULTI_SZ)</code> that has a value of
 
 partmgr<br>
 MBRFilterPP
@@ -76,5 +74,5 @@ Repeat the steps and make sure of:<br>
 3. If you face any other issues Please contact me and if possible provide mini dumps, and as much info possible.<br>
 thank you for using Salah-Code-Lab Solutions
 
-You can Contact me in Session for Direct messages if you needed support or more info about the Driver(s):
-056bf8ea1a057b4f351d8b651944252cd4d88416ce6c11761f0c406f228a302301
+You can Contact me in Session for Direct messages if you needed support or more info about the Driver(s):<br>
+> 056bf8ea1a057b4f351d8b651944252cd4d88416ce6c11761f0c406f228a302301
