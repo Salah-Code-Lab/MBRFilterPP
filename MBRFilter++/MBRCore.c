@@ -4,15 +4,19 @@
  * 
  */
 
+ // {1E4C6CF0-833A-4CFF-B182-CF1C7245268A}
+
+
+
 #define INITGUID
 #include <guiddef.h>
 DEFINE_GUID(MBR_FILTER_PROVIDER,
     0x1e4c6cf0, 0x833a, 0x4cff, 0xb1, 0x82, 0xcf, 0x1c, 0x72, 0x45, 0x26, 0x8a);
+
 #define MBR_EVENT_BLOCK_ID 9857
-REGHANDLE MbrEtwRegHandle = 0;
 
 #include "MBRInclude.h"
-
+REGHANDLE MbrEtwRegHandle = 0;
 
 // Hel;er
 
@@ -203,11 +207,10 @@ MBRFilterPP_QuerySectorSize(
             return STATUS_SUCCESS;
         }
 
-        KdPrint(("MBRFilter++: Bogus or Hot Garbage BytesPerLogicalSector %llu, falling back\n", bps));
+        DbgPrint("MBRFilter++: Bogus or Hot Garbage BytesPerLogicalSector: %llu", bps);
     }
 
-    KdPrint(("MBRFilter++: StorageAccessAlignmentProperty failed (0x%08X), "
-        "falling back to DISK_GEOMETRY_EX\n", status));
+    DbgPrint("MBRFilter++: StorageAccessAlignmentProperty failed with status: 0x%08X", status);
 
     RtlZeroMemory(&geoEx, sizeof(geoEx));
 
@@ -312,8 +315,7 @@ MBRFilterPP_DetectGPT(
 
     if (!NT_SUCCESS(status))
     {
-        KdPrint(("MBRFilter++: Sector 0 read failed (0x%08X) defaulting to MBR\n",
-            status));
+        DbgPrint("MBRFilter++: Sector 0 read failed:0x%08X defaulting to MBR", status);
         status = STATUS_SUCCESS;
         goto Cleanup;
     }
@@ -329,12 +331,12 @@ MBRFilterPP_DetectGPT(
 
     if (partEntry->PartitionType == GPT_PROTECTIVE_TYPE)
     {
-        KdPrint(("MBRFilter++: GPT protective MBR detected tail protection IS ARMED\n"));
+        DbgPrint("MBRFilter++: GPT protective MBR detected tail protection IS ARMED\n");
         *IsGPT = TRUE;
     }
     else
     {
-        KdPrint(("MBRFilter++: MBR partition scheme tail protection IS INACTIVE\n"));
+        DbgPrint("MBRFilter++: MBR partition scheme tail protection IS INACTIVE\n");
     }
 
     status = STATUS_SUCCESS;
@@ -394,7 +396,7 @@ MBRFilterPP_StartDeviceCompletion(
                 // Mathematically verify that Sectors * SectorSize fits inside the disk not garbage writes to bypass
                 if (!NT_SUCCESS(RtlULongLongMult(totalSectors, bytesPerSector, &maxDiskBytes)))
                 {
-                    KdPrint(("MBRFilter++: CRITICAL Spoofed or insane disk size overflow detected! Refusing to arm.\n"));
+                    DbgPrint("MBRFilter++: CRITICAL Spoofed or insane disk size:%llu overflow detected! Refusing to arm.\n", maxDiskBytes);
                     devExt->ProtectionEnabled = FALSE;
                     return STATUS_CONTINUE_COMPLETION;
                 }
@@ -409,7 +411,7 @@ MBRFilterPP_StartDeviceCompletion(
                 devExt->IsGPT = isGPT;
                 devExt->ProtectionEnabled = TRUE;
 
-                KdPrint((
+                DbgPrint((
                     "MBRFilter++: ARMED\n"
                     "   BytesPerSector : %llu\n"
                     "   TotalSectors   : %llu\n"
@@ -423,7 +425,7 @@ MBRFilterPP_StartDeviceCompletion(
         }
 
         if (!devExt->ProtectionEnabled)
-            KdPrint(("MBRFilter++: Not armed — staying passive\n"));
+            DbgPrint(("MBRFilter++: Not armed staying passive For Now\n"));
     }
 
     if (Irp->PendingReturned)
@@ -553,7 +555,6 @@ MBRFilterPP_DispatchPassThrough(
 
 
 
-
  NTSTATUS
      MBRFilterPP_CheckSectorRange(
          _In_ PMBRFILTERPP_DEVICE_EXTENSION  DevExt,
@@ -610,7 +611,7 @@ MBRFilterPP_DispatchPassThrough(
                  eventDescriptor.Level = 3;
                  eventDescriptor.Channel = 1;
 
-                 const char* warningMessage = "A Kernel Thread/Driver had attempted write to the Last 64 sectors of your disk";
+                 const char* warningMessage = "Kernel attempted write to the Last 64 sectors of your disk";
 
                  EtwEventDataDescCreate(&dataFields[0], warningMessage, (ULONG)(strlen(warningMessage) + 1));
                  EtwEventDataDescCreate(&dataFields[1], &StartSector, sizeof(ULONG64));
@@ -643,7 +644,7 @@ MBRFilterPP_DispatchPassThrough(
                      eventDescriptor.Level = 3;
                      eventDescriptor.Channel = 1;
 
-                     const char* warningMessage = "A Kernel Thread/Driver had attempted write to the Mid 64-5119 Sectors";
+                     const char* warningMessage = "Kernel attempted write to the Mid 64-5119 Sectors of Your disk";
 
                      EtwEventDataDescCreate(&dataFields[0], warningMessage, (ULONG)(strlen(warningMessage) + 1));
                      EtwEventDataDescCreate(&dataFields[1], &StartSector, sizeof(ULONG64));
@@ -661,16 +662,23 @@ MBRFilterPP_DispatchPassThrough(
      }
      else
      {
+
          // --- UserMode Section ---
          if (StartSector <= CRITICAL_ZONE_END)
          {
              MBRFilterPP_Main64(StartSector, EndSector);
+             HANDLE pid = PsGetCurrentProcessId();
+             PEPROCESS process = PsGetCurrentProcess();
+             DbgPrint("Process attempted write to the first few Sectors, Start:%llu, End%llu, Process:%p, PID:%p", StartSector, EndSector, process, pid);
              return STATUS_ACCESS_DENIED;
          }
 
          if (DevExt->IsGPT && (EndSector >= DevExt->TailStartSector))
          {
              MBRFilterPP_Last64(StartSector, EndSector);
+             HANDLE pid = PsGetCurrentProcessId();
+             PEPROCESS process = PsGetCurrentProcess();
+             DbgPrint("Process attempted write to Last few sectors, Start:%llu, End%llu, Process:%p, PID:%p", StartSector, EndSector, process, pid);
              return STATUS_ACCESS_DENIED;
          }
 
@@ -682,6 +690,9 @@ MBRFilterPP_DispatchPassThrough(
              if (!fullyInExempt)
              {
                  MBRFilterPP_Mid64_5119(StartSector, EndSector);
+                 HANDLE pid = PsGetCurrentProcessId();
+                 PEPROCESS process = PsGetCurrentProcess();
+                 DbgPrint("Process attempted write to Sectors, Start:%llu, End%llu, Process:%p, PID:%p", StartSector, EndSector, process, pid);
                  return STATUS_ACCESS_DENIED;
              }
          }
@@ -690,7 +701,6 @@ MBRFilterPP_DispatchPassThrough(
      
      return STATUS_SUCCESS;
  }
-
 
 
 
@@ -732,11 +742,8 @@ MBRFilterPP_DispatchPassThrough(
    
      if ((byteOffset % bps) != 0)
      {
-         KdPrint((
-             "MBRFilter++: IRP_MJ_WRITE rejected — "
-             "misaligned byte offset %llu (BytesPerSector=%llu)\n",
-             byteOffset, bps
-             ));
+         DbgPrint(
+             "MBRFilter++: misaligned byte offset %llu (BytesPerSector=%llu)\n",byteOffset, bps);
          Irp->IoStatus.Status = STATUS_INVALID_PARAMETER;
          Irp->IoStatus.Information = 0;
          IoCompleteRequest(Irp, IO_NO_INCREMENT);
@@ -747,7 +754,9 @@ MBRFilterPP_DispatchPassThrough(
 
      if (byteOffset >= maxDiskBytes || writeLength > (maxDiskBytes - byteOffset))
      {
-         KdPrint(("MBRFilter++: Rejected massive or out-of-bounds IRP_MJ_WRITE length!\n"));
+         HANDLE pid = PsGetCurrentProcessId();
+         PEPROCESS process = PsGetCurrentProcess();
+         DbgPrint("MBRFilter++: Rejected massive or out-of-bounds IRP_MJ_WRITE length! %llu, Process:%p, PID:%p\n", writeLength, process, pid);
          Irp->IoStatus.Status = STATUS_INVALID_PARAMETER;
          Irp->IoStatus.Information = 0;
          IoCompleteRequest(Irp, IO_NO_INCREMENT);
@@ -758,6 +767,112 @@ MBRFilterPP_DispatchPassThrough(
      startSector = byteOffset / bps;
 
      endSector = (byteOffset + writeLength - 1) / bps;
+
+     if (startSector == 0 && writeLength > 0)
+     {
+         PUCHAR buffer = NULL;
+
+         // Determine buffer location based on I/O method
+         if (Irp->MdlAddress != NULL)
+         {
+             // Direct I/O
+             buffer = (PUCHAR)MmGetSystemAddressForMdlSafe(Irp->MdlAddress, NormalPagePriority);
+         }
+         else if (Irp->AssociatedIrp.SystemBuffer != NULL)
+         {
+             // Buffered I/O
+             buffer = (PUCHAR)Irp->AssociatedIrp.SystemBuffer;
+         }
+         // Note: Neither I/O is rare for disk filters, but if needed:
+         // buffer = (PUCHAR)stack->Parameters.Write.Buffer; // user-mode addr, dangerous
+
+         if (buffer != NULL)
+         {
+             
+             CHAR hexDump[256];
+             ULONG dumpLen = (writeLength < 512) ? (ULONG)writeLength : 64;
+
+             RtlZeroMemory(hexDump, sizeof(hexDump));
+
+             for (ULONG i = 0; i < dumpLen; i++)
+             {
+                 RtlStringCchPrintfA(hexDump + (i * 2), 3, "%02X", buffer[i]);
+             }
+
+             DbgPrint("MBRFilter++: SECTOR0 WRITE |—-/--/--/--| %llu bytes, first %lu bytes: %s\n",
+                 writeLength, dumpLen, hexDump);
+
+             // Optional: dump full 512 if you want note that it can be 1028 2048 4096
+             if (writeLength >= 512)
+             {
+                 CHAR fullDump[1025]; // 512*2 + 1 [Dont Forget to change this as well if you did edit the Write length dump]
+                 RtlZeroMemory(fullDump, sizeof(fullDump));
+                 for (ULONG i = 0; i < 512; i++)
+                 {
+                     RtlStringCchPrintfA(fullDump + (i * 2), 3, "%02X", buffer[i]);
+                 }
+                 DbgPrint("MBRFilter++: FULL SECTOR0: %s\n", fullDump);
+             }
+         }
+         else
+         {
+             DbgPrint("MBRFilter++: SECTOR0 WRITE |/—/| buffer is NULL (cannot inspect)\n");
+         }
+     }
+
+
+     if (startSector == 1 && writeLength > 0)
+     {
+         PUCHAR buffer = NULL;
+
+         // Determine buffer location based on I/O method
+         if (Irp->MdlAddress != NULL)
+         {
+             // Direct I/O
+             buffer = (PUCHAR)MmGetSystemAddressForMdlSafe(Irp->MdlAddress, NormalPagePriority);
+         }
+         else if (Irp->AssociatedIrp.SystemBuffer != NULL)
+         {
+             // Buffered I/O
+             buffer = (PUCHAR)Irp->AssociatedIrp.SystemBuffer;
+         }
+         // Note: Neither I/O is rare for disk filters, but if needed:
+         // buffer = (PUCHAR)stack->Parameters.Write.Buffer; // user-mode addr, dangerous
+
+         if (buffer != NULL)
+         {
+
+             CHAR hexDump[256];
+             ULONG dumpLen = (writeLength < 512) ? (ULONG)writeLength : 64;
+
+             RtlZeroMemory(hexDump, sizeof(hexDump));
+
+             for (ULONG i = 0; i < dumpLen; i++)
+             {
+                 RtlStringCchPrintfA(hexDump + (i * 2), 3, "%02X", buffer[i]);
+             }
+
+             DbgPrint("MBRFilter++: SECTOR1 WRITE %llu bytes, first %lu bytes: %s\n",
+                 writeLength, dumpLen, hexDump);
+
+             // Optional: dump full 512 if you want you can Dump more if needed 1028, 2048, 4096
+             if (writeLength >= 512)
+             {
+                 CHAR fullDump[1025]; // 512*2 + 1 [Dont Forget to change this as well if you did edit the Write length dump]
+                 RtlZeroMemory(fullDump, sizeof(fullDump));
+                 for (ULONG i = 0; i < 512; i++)
+                 {
+                     RtlStringCchPrintfA(fullDump + (i * 2), 3, "%02X", buffer[i]);
+                 }
+                 DbgPrint("MBRFilter++: FULL SECTOR1: %s\n", fullDump);
+             }
+         }
+         else
+         {
+             DbgPrint("MBRFilter++: SECTOR1 WRITE /—------|-------/ buffer is NULL (cannot inspect)\n");
+         }
+     }
+
 
      status = MBRFilterPP_CheckSectorRange(devExt, startSector, endSector, DeviceObject);
 
@@ -777,8 +892,12 @@ MBRFilterPP_DispatchPassThrough(
  // they are already done correctly!
  VOID DriverUnload(_In_ PDRIVER_OBJECT DriverObject)
  {
+     DbgPrint("[MBRFPP]: DriverUnload had been called");
      PDEVICE_OBJECT deviceObject = DriverObject->DeviceObject;
-
+     if (MbrEtwRegHandle != 0) {
+         EtwUnregister(MbrEtwRegHandle);
+         MbrEtwRegHandle = 0;
+     }
      while (deviceObject != NULL) {
          
          PMBRFILTERPP_DEVICE_EXTENSION devExt = (PMBRFILTERPP_DEVICE_EXTENSION)deviceObject->DeviceExtension;
@@ -815,7 +934,7 @@ MBRFilterPP_DispatchPassThrough(
          DriverObject->DriverUnload = NULL;
      }
 
-     KdPrint(("MBRFilter++: DriverEntry\n"));
+     DbgPrint("MBRFilter++: DriverEntry\n");
 
      for (i = 0; i <= IRP_MJ_MAXIMUM_FUNCTION; i++)
          DriverObject->MajorFunction[i] = MBRFilterPP_DispatchPassThrough;
@@ -825,9 +944,13 @@ MBRFilterPP_DispatchPassThrough(
      DriverObject->MajorFunction[IRP_MJ_PNP] = MBRFilterPP_DispatchPnP;
      DriverObject->MajorFunction[IRP_MJ_POWER] = MBRFilterPP_DispatchPower;
      DriverObject->DriverExtension->AddDevice = MBRFilterPP_AddDevice;
- 
-    
 
-    KdPrint(("MBRFilter++: DriverEntry complete\n"));
+     NTSTATUS etwStatus = EtwRegister(&MBR_FILTER_PROVIDER, NULL, NULL, &MbrEtwRegHandle);
+     if (!NT_SUCCESS(etwStatus)) {
+         DbgPrint("MBRFilter++: Failed to register ETW provider status:0x%08X", etwStatus);
+         MbrEtwRegHandle = 0;
+     }
+
+    DbgPrint("MBRFilter++: DriverEntry complete\n");
     return STATUS_SUCCESS;
 };
